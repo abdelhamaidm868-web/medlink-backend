@@ -1,1 +1,9 @@
-console.log("ay 7agaaaaa")
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
+console.log("el dahhhehhhh");
