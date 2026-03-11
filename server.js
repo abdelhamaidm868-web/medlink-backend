@@ -10,19 +10,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", async (req, res) => {
+// Test Database Connection
+const testDB = async () => {
   try {
-   
     const [rows] = await pool.execute("SELECT 1");
-    res.send("MediLink API + Database Connected");
+    console.log("Database connected successfully!");
   } catch (error) {
+    console.error("Database connection failed:");
     console.error(error);
-    res.status(500).send("Database connection failed");
   }
+};
+
+testDB();
+
+app.get("/", (req, res) => {
+  res.send("MediLink API running");
 });
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
