@@ -1,10 +1,9 @@
 console.log("goda");
 console.log("goda");
 console.log("goda");
-console.log("goda");
-console.log("3b7amid");
-console.log("goda");
-console.log("goda");
-console.log("3b7amid");
+for (let i =0 ; i<10 ;i++){
+    console.log(i);
+    
+}
 console.log("goda");
 console.log("goda");
