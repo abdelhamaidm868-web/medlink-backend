@@ -1,6 +1,8 @@
 import express from "express";
 import {db , DBconnection}  from "./config/database.js";
-import router from "./routes/auth.routes.js";
+import authRoutes  from "./routes/auth.routes.js";
+import pharmacyRoutes from "./routes/pharmacy.routes.js";
+import ordersRoutes from "./routes/order.routes.js"
 
 DBconnection()
 
@@ -12,7 +14,9 @@ app.get("/user", (req, res) => {
   res.send("welcome to Graduation Project");
 });
 
-app.use("/user/auth", router);
+app.use("/", authRoutes);
+app.use("/", pharmacyRoutes);
+app.use("/", ordersRoutes);
 
 const PORT = process.env.PORT || 5000;
 
