@@ -1,9 +1,17 @@
-//user login,register / pharmecy login,register
-import express from "express"
-import { userRegister } from "../controllers/auth.controllers.js"
+import express from "express";
+import {  pharmecyLogin,  pharmecyRegister,  userLogin,  userRegister} from "../controllers/auth.controllers.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post("/register", userRegister)
+// Pharmacy 
+router.post("/pharmecy/login", pharmecyLogin);
+router.post("/pharmecy/register", pharmecyRegister);
 
-export default router
+// User 
+router.post("/user/login", userLogin);
+router.post("/user/register", userRegister);
+
+
+
+
+export default router;
