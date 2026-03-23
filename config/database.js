@@ -3,9 +3,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const db = mysql.createConnection(
-  "mysql://unr3fbqfecj6wtrd:e6Bq21k0rWHAihgiLUG1@bbebuqh4dtcka1kgpp2e-mysql.services.clever-cloud.com:3306/bbebuqh4dtcka1kgpp2e",
-);
+export const db = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+});
 
 function DBconnection() {
   db.connect((error) => {
