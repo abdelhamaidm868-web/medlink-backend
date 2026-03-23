@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import {db , DBconnection}  from "./config/database.js";
 import authRoutes  from "./routes/auth.routes.js";
 import pharmacyRoutes from "./routes/pharmacy.routes.js";
@@ -15,6 +16,7 @@ DBconnection()
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.get("/user", (req, res) => {
   res.send("welcome to Graduation Project");

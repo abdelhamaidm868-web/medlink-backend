@@ -3,28 +3,18 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+const db = mysql.createConnection(
+  "mysql://unr3fbqfecj6wtrd:e6Bq21k0rWHAihgiLUG1@bbebuqh4dtcka1kgpp2e-mysql.services.clever-cloud.com:3306/bbebuqh4dtcka1kgpp2e",
+);
 
-
-function  DBconnection ()
-
-{
-db.connect((error) =>{
-  if (error){
-return console.log(error.message);
-
-  }
-
-  else{
-    return console.log("server connection with Database success");
-    
-  }
-})
+function DBconnection() {
+  db.connect((error) => {
+    if (error) {
+      return console.log(error.message);
+    } else {
+      return console.log("server connection with Database success");
+    }
+  });
 }
 
-export {db , DBconnection}
+export { db, DBconnection };
