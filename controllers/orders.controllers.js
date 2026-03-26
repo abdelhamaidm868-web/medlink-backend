@@ -269,14 +269,12 @@ export const updateOrderStatus = async (req, res) => {
       Cancelled: []
     };
 
-    // check لو الانتقال مسموح
     if (!validTransitions[currentStatus].includes(status)) {
       return res.status(400).json({
         message: `Cannot change status from ${currentStatus} to ${status}`
       });
     }
 
-    // 3️⃣ update
     await db.promise().query(
       "UPDATE orders SET OrderStatus = ? WHERE Id = ?",
       [status, orderId]

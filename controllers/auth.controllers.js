@@ -7,9 +7,9 @@ import { db } from "../config/database.js";
 // -----------------------------user register-------------------------------------------------
 export const userRegister = (req, res) => {
 
-  const { name, email, password } = req.body;
+  const { name, email,phone ,location, password, confirmPassword  } = req.body;
 
-  if (!name || !email || !password) {
+  if (!name || !email || !phone || !location || !password || !confirmPassword ) {
     return res.status(400).json({
       message: "All fields are required"
     });
@@ -32,16 +32,24 @@ export const userRegister = (req, res) => {
       });
     }
 
+    
+  if(password !== confirmPassword)
+  {
+    return res.status(400).json({message : "Passwords do not match"})
+  }
+
     try {
+
+
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const insertQuery =
-        "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+        "INSERT INTO users (name, email , location , phone, password) VALUES (? , ? , ? , ? , ?)";
 
       db.execute(
         insertQuery,
-        [name, email, hashedPassword],
+        [name , email , location , phone , hashedPassword],
         (err, result) => {
 
           if (err) {
@@ -109,9 +117,9 @@ export const userLogin = (req,res)=>{
 //--------------------------------pharmecy register-------------------------------------------
 export const pharmecyRegister =  (req, res) => {
 
-  const { name, email, password , phone , location} = req.body;
+  const { name, email, phone , location, password ,confirmPassword} = req.body;
 
-  if (!name || !email || !password || !phone || !location) {
+  if (!name || !email || !phone || !location || !password || !confirmPassword ) {
     return res.status(400).json({
       message: "All fields are required"
     });
@@ -132,6 +140,11 @@ export const pharmecyRegister =  (req, res) => {
       return res.status(400).json({
         message: "Email already exists"
       });
+    }
+
+    if (password !== confirmPassword)
+    {
+      return res.status(400).json({message : "passeord do not match"})
     }
 
     try {
