@@ -15,6 +15,11 @@ export const userRegister = (req, res) => {
     });
   }
 
+  if(password !== confirmPassword)
+  {
+    return res.status(400).json({message : "Passwords do not match"})
+  }
+
   const checkQuery = "SELECT * FROM users WHERE email = ?";
 
   db.execute(checkQuery, [email], async (err, results) => {
@@ -33,11 +38,6 @@ export const userRegister = (req, res) => {
     }
 
     
-  if(password !== confirmPassword)
-  {
-    return res.status(400).json({message : "Passwords do not match"})
-  }
-
     try {
 
 
@@ -125,6 +125,12 @@ export const pharmecyRegister =  (req, res) => {
     });
   }
 
+  
+    if (password !== confirmPassword)
+    {
+      return res.status(400).json({message : "passeord do not match"})
+    }
+    
   const checkQuery = "SELECT * FROM pharmacy WHERE email = ?";
 
   db.execute(checkQuery, [email], async (err, results) => {
@@ -142,10 +148,6 @@ export const pharmecyRegister =  (req, res) => {
       });
     }
 
-    if (password !== confirmPassword)
-    {
-      return res.status(400).json({message : "passeord do not match"})
-    }
 
     try {
 
