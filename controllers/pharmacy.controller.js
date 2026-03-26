@@ -14,7 +14,7 @@ export const addMedicineToPharmacy = (req, res) => {
   db.execute(pharmacyQuery, [pharmacyId], (err, pharmacyResult) => {
     if (err) {
       console.log(err);
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "Server error1" });
     }
 
     if (pharmacyResult.length === 0) {
@@ -25,7 +25,7 @@ export const addMedicineToPharmacy = (req, res) => {
     db.execute(medicineQuery, [medicineId], (err, medicineResult) => {
       if (err) {
         console.log(err);
-        return res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: "Server error2" });
       }
 
       if (medicineResult.length === 0) {
@@ -34,19 +34,19 @@ export const addMedicineToPharmacy = (req, res) => {
 
       // التحقق إذا الدواء موجود بالفعل في مخزون الصيدلية
       const checkQuery = `
-        SELECT * FROM PharmacyMedicine
+        SELECT * FROM pharmacymedicine
         WHERE PharmacyId = ? AND MedicineId = ?
       `;
       db.execute(checkQuery, [pharmacyId, medicineId], (err, checkResult) => {
         if (err) {
           console.log(err);
-          return res.status(500).json({ message: "Server error" });
+          return res.status(500).json({ message: "Server error3" });
         }
 
         if (checkResult.length > 0) {
           // تحديث الكمية والسعر والتاريخ
           const updateQuery = `
-            UPDATE PharmacyMedicine
+            UPDATE pharmacymedicine
             SET Quantity = Quantity + ?, Price = ?, ExpiryDate = ?
             WHERE PharmacyId = ? AND MedicineId = ?
           `;
@@ -56,7 +56,7 @@ export const addMedicineToPharmacy = (req, res) => {
             (err) => {
               if (err) {
                 console.log(err);
-                return res.status(500).json({ message: "Server error" });
+                return res.status(500).json({ message: "Server error4" });
               }
 
               return res.json({ message: "Medicine quantity updated" });
@@ -65,7 +65,7 @@ export const addMedicineToPharmacy = (req, res) => {
         } else {
           // إضافة الدواء للمخزون
           const insertQuery = `
-            INSERT INTO PharmacyMedicine
+            INSERT INTO pharmacymedicine
             (PharmacyId, MedicineId, Price, Quantity, ExpiryDate)
             VALUES (?, ?, ?, ?, ?)
           `;
@@ -75,7 +75,7 @@ export const addMedicineToPharmacy = (req, res) => {
             (err) => {
               if (err) {
                 console.log(err);
-                return res.status(500).json({ message: "Server error" });
+                return res.status(500).json({ message: "Server error5" });
               }
 
               return res.status(201).json({ message: "Medicine added to pharmacy" });
@@ -225,4 +225,5 @@ export const getPharmacyOrders = (req, res) => {
     });
   });
 };
+// -------------------------------------------------------------------------------------
 
