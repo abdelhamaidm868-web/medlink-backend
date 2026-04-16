@@ -1,0 +1,229 @@
+// controllers/pharmacy.controller.js
+import { db } from "../config/database.js";
+import bcrypt from "bcrypt";
+
+// ------------------------------- Add Medicine to Pharmacy ------------------ --------------
+export const addMedicineToPharmacy = (req, res) => {
+  const { pharmacyId, medicineId, price, quantity, expiryDate } = req.body;
+
+  if (!pharmacyId || !medicineId || !price || !quantity || !expiryDate) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  const pharmacyQuery = "SELECT * FROM pharmacy WHERE Id = ?";
+  db.execute(pharmacyQuery, [pharmacyId], (err, pharmacyResult) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Server error1" });
+    }
+
+    if (pharmacyResult.length === 0) {
+      return res.status(404).json({ message: "Pharmacy not found" });
+    }
+
+    const medicineQuery = "SELECT * FROM medicine WHERE Id = ?";
+    db.execute(medicineQuery, [medicineId], (err, medicineResult) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Server error2" });
+      }
+
+      if (medicineResult.length === 0) {
+        return res.status(404).json({ message: "Medicine not found" });
+      }
+
+      // التحقق إذا الدواء موجود بالفعل في مخزون الصيدلية
+      const checkQuery = `
+        SELECT * FROM pharmacymedicine
+        WHERE PharmacyId = ? AND MedicineId = ?
+      `;
+      db.execute(checkQuery, [pharmacyId, medicineId], (err, checkResult) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Server error3" });
+        }
+
+        if (checkResult.length > 0) {
+          // تحديث الكمية والسعر والتاريخ
+          const updateQuery = `
+            UPDATE pharmacymedicine
+            SET Quantity = Quantity + ?, Price = ?, ExpiryDate = ?
+            WHERE PharmacyId = ? AND MedicineId = ?
+          `;
+          db.execute(
+            updateQuery,
+            [quantity, price, expiryDate, pharmacyId, medicineId],
+            (err) => {
+              if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Server error4" });
+              }
+
+              return res.json({ message: "Medicine quantity updated" });
+            }
+          );
+        } else {
+          // إضافة الدواء للمخزون
+          const insertQuery = `
+            INSERT INTO pharmacymedicine
+            (PharmacyId, MedicineId, Price, Quantity, ExpiryDate)
+            VALUES (?, ?, ?, ?, ?)
+          `;
+          db.execute(
+            insertQuery,
+            [pharmacyId, medicineId, price, quantity, expiryDate],
+            (err) => {
+              if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Server error5" });
+              }
+
+              return res.status(201).json({ message: "Medicine added to pharmacy" });
+            }
+          );
+        }
+      });
+    });
+  });
+};
+// ----------------------------------update pharmacy info----------------------------------
+
+export const updatePharmacy = async (req, res) => {
+  const { Name , pharmacyId, phone, location, password } = req.body;
+
+  if (!pharmacyId) {
+    return res.status(400).json({ message: "Pharmacy ID is required" });
+  }
+
+  // التحقق من وجود الصيدلية
+  const checkQuery = "SELECT * FROM pharmacy WHERE Id = ?";
+  db.execute(checkQuery, [pharmacyId], async (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Pharmacy not found" });
+    }
+
+    let fields = [];
+    let values = [];
+
+    if (Name) {
+      fields.push("Name = ?");
+      values.push(Name);
+    }
+
+
+    if (phone) {
+      fields.push("Phone = ?");
+      values.push(phone);
+    }
+
+    if (location) {
+      fields.push("Location = ?");
+      values.push(location);
+    }
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      fields.push("Password = ?");
+      values.push(hashedPassword);
+    }
+
+    
+
+    if (fields.length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
+    }
+
+    values.push(pharmacyId); // للـ WHERE
+
+    const updateQuery = `
+      UPDATE pharmacy
+      SET ${fields.join(", ")}
+      WHERE Id = ?
+    `;
+
+    db.execute(updateQuery, values, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      res.json({ message: "Pharmacy updated successfully" });
+    });
+  });
+};
+// --------------------------------pharmacy orders----------------------------------
+
+export const getPharmacyOrders = (req, res) => {
+  const { pharmacyId } = req.query;
+
+  if (!pharmacyId) {
+    return res.status(400).json({ message: "Pharmacy ID is required" });
+  }
+
+  const checkPharmacy = "SELECT * FROM pharmacy WHERE Id = ?";
+  db.execute(checkPharmacy, [pharmacyId], (err, pharmacyResult) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (pharmacyResult.length === 0) {
+      return res.status(404).json({ message: "Pharmacy not found" });
+    }
+
+    // جلب الطلبات مع تفاصيل المستخدم والأدوية
+    const ordersQuery = `
+      SELECT o.Id as orderId, o.OrderDate, o.OrderStatus, o.TotalPrice,
+             u.Id as userId, u.Name as userName, u.Email as userEmail,
+             m.Id as medicineId, m.Name as medicineName, od.Quantity, od.Price
+      FROM orders o
+      JOIN users u ON o.UserId = u.Id
+      JOIN orderdetails od ON od.OrderId = o.Id
+      JOIN medicine m ON od.MedicineId = m.Id
+      WHERE o.PharmacyId = ?
+      ORDER BY o.OrderDate DESC
+    `;
+
+    db.execute(ordersQuery, [pharmacyId], (err, orders) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      // ترتيب النتائج لتجميع الأدوية لكل طلب
+      const result = {};
+      orders.forEach(row => {
+        if (!result[row.orderId]) {
+          result[row.orderId] = {
+            orderId: row.orderId,
+            orderDate: row.OrderDate,
+            orderStatus: row.OrderStatus,
+            totalPrice: row.TotalPrice,
+            user: {
+              id: row.userId,
+              name: row.userName,
+              email: row.userEmail
+            },
+            medicines: []
+          };
+        }
+
+        result[row.orderId].medicines.push({
+          id: row.medicineId,
+          name: row.medicineName,
+          quantity: row.Quantity,
+          price: row.Price
+        });
+      });
+
+      res.json(Object.values(result));
+    });
+  });
+};
+// -------------------------------------------------------------------------------------
+
