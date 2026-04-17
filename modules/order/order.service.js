@@ -1,5 +1,5 @@
 // createOrder 
-import { db } from "../config/database.js";
+import { db } from "../../config/database.js";
 // ---------------------create order-------------------------------------------------------
 export const createOrder = async (req, res) => {
   const { user_id, pharmacy_id, items } = req.body;
@@ -89,11 +89,11 @@ export const createOrder = async (req, res) => {
 // ---------------------get order by id-------------------------------------------------------
 
 export const getOrderById = async (req, res) => {
-  const orderId = req.params.id;
+  const {user_id} = req.body;
 
   try {
     const [rows] = await db.promise().query(`
-      SELECT 
+  SELECT 
         o.Id AS order_id,
         o.UserId,
         o.PharmacyId,
@@ -110,8 +110,8 @@ export const getOrderById = async (req, res) => {
       FROM orders o
       JOIN orderdetails od ON o.Id = od.OrderId
       JOIN medicine m ON od.MedicineId = m.Id
-      WHERE o.Id = ?
-    `, [orderId]);
+      WHERE o.UserId=1;
+    `, [user_id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Order not found" });
@@ -208,7 +208,7 @@ export const getOrders = async (req, res) => {
 export const cancelOrder = async (req, res) => {
   const orderId = req.params.id;
 
-  try {
+  try { 
     // 1️⃣ هات order details
     const [details] = await db.promise().query(
       "SELECT MedicineId, Quantity FROM orderdetails WHERE OrderId = ?",

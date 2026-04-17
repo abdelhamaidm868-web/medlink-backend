@@ -1,6 +1,6 @@
-// controllers/pharmacy.controller.js
-import { db } from "../config/database.js";
 import bcrypt from "bcrypt";
+import { db } from "../../config/database.js";
+
 
 // ------------------------------- Add Medicine to Pharmacy ------------------ --------------
 export const addMedicineToPharmacy = (req, res) => {
@@ -225,5 +225,170 @@ export const getPharmacyOrders = (req, res) => {
     });
   });
 };
+
 // -------------------------------------------------------------------------------------
 
+
+export const deletemedicine = (req, res) => {
+  const { pharmacy_id, medicine_id, Quantity } = req.body;
+
+  const query = `
+    SELECT pharmacymedicine.Quantity 
+    FROM pharmacymedicine 
+    WHERE PharmacyId = ? AND MedicineId = ?
+  `;
+
+  db.execute(query, [pharmacy_id, medicine_id], (error, result) => {
+    if (error) return res.json({ msg: error.message });
+
+    if (result.length == 0) {
+      return res.status(404).json({ msg: "Medicine not found" });
+    }
+
+    const currentQuantity = result[0].Quantity;
+
+    // ❌ لو عايز يحذف أكتر من الموجود
+    if (Quantity > currentQuantity) {
+      return res.status(400).json({
+        msg: "you not have this Quantity of Medicine",
+      });
+    }
+
+    // ✅ حذف كله
+    if (Quantity == currentQuantity) {
+      const deleteQuery = `
+        DELETE FROM pharmacymedicine 
+        WHERE PharmacyId = ? AND MedicineId = ?
+      `;
+
+      return db.execute(deleteQuery, [pharmacy_id, medicine_id], (err) => {
+        if (err) return res.json({ msg: err.message });
+
+        return res.status(200).json({
+          msg: "Delete all medicine Done",
+        });
+      });
+    }
+
+    // ✅ حذف جزء
+    const newQuantity = currentQuantity - Quantity;
+
+    const updateQuery = `
+      UPDATE pharmacymedicine 
+      SET Quantity = ? 
+      WHERE PharmacyId = ? AND MedicineId = ?
+    `;
+
+    db.execute(updateQuery, [newQuantity, pharmacy_id, medicine_id], (err) => {
+      if (err) return res.json({ msg: err.message });
+
+      res.status(200).json({
+        msg: "Delete part of medicine Done",
+        remaining: newQuantity,
+      });
+    });
+  })}
+
+  ////////////////////////////////////////////////////////////////////////////
+
+  export const getall_medicine = (req, res) => {
+  const { pharmacy_id } = req.body;
+
+  const query = `
+    SELECT 
+      medicine.Name,
+      medicine.Category,
+      medicine.Description,
+      pharmacymedicine.Price,
+      pharmacymedicine.Quantity,
+      pharmacymedicine.ExpiryDate 
+    FROM medicine 
+    JOIN pharmacymedicine
+      ON medicine.Id = pharmacymedicine.MedicineId
+    WHERE pharmacymedicine.PharmacyId = ? ;
+  `;
+
+  const values = [pharmacy_id];
+
+  db.execute(query, values, (error, result) => {
+    if (error) return res.json({ msg: error.message });
+
+    if (result.length != 0) {
+      const lowStock = result.filter((med) => med.Quantity < 4);
+
+      let warning = null;
+
+      if (lowStock.length > 0) {
+        const names = lowStock.map((med) => med.Name);
+        warning = `⚠️ Low stock for: ${names.join(", ")} is less than 4 `;
+      }
+
+      res.status(200).json({
+        msg: result,
+        warning: warning, // 👈 الرسالة التحذيرية
+      });
+    } else {
+      res.status(404).json({ msg: "No medicines found" });
+    }
+  });
+}
+
+/////////////////////////////////////////////////////////////////
+
+export const search_medicine =(req, res) => {
+  const { pharmacy_id  } = req.body;
+  const {input} = req.query
+
+  const query = `
+   SELECT medicine.Name, medicine.Category, medicine.Description, pharmacymedicine.Price, pharmacymedicine.Quantity, pharmacymedicine.ExpiryDate FROM medicine JOIN pharmacymedicine ON medicine.Id = pharmacymedicine.MedicineId WHERE pharmacymedicine.PharmacyId = ? and medicine.Name LIKE ? ;
+  `;
+
+  const values = [pharmacy_id , `%${input}%`];
+
+  db.execute(query, values, (error, result) => {
+    if (error) return res.json({ msg: error.message });
+
+    if (result.length != 0) {
+      const lowStock = result.filter((med) => med.Quantity < 4);
+
+      let warning = null;
+
+      if (lowStock.length > 0) {
+        const names = lowStock.map((med) => med.Name);
+        warning = `⚠️ Low stock for: ${names.join(", ")} is less than 4 `;
+      }
+
+      res.status(200).json({
+        msg: result,
+        warning: warning, // 👈 الرسالة التحذيرية
+      });
+    } else {
+      res.status(404).json({ msg: "No medicines found" });
+    }
+  });
+}
+
+
+/////////////////////////////////////////////////////////////////////
+
+export const profile_pharmcy = (req,res)=>{
+
+
+ const { id_pharmcy } = req.body;
+  const values = [id_pharmcy];
+  const query_check_find_user = `SELECT pharmacy.Id , pharmacy.Name , pharmacy.Email , pharmacy.Phone , pharmacy.Location 
+from pharmacy 
+where pharmacy.Id = ?`
+  
+  db.execute(query_check_find_user, values, (error, result) => {
+    if (error) return res.status(500).json({ msg: error.message });
+    if (result.length != 0) {
+      res.status(200).json({ message: "pharmcy profile", data: result });
+    } else {
+      res.status(404).json({ message: "pharmacy  not found" });
+    }
+  });
+
+
+
+}

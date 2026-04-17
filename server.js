@@ -1,34 +1,28 @@
 import express from "express";
 import cors from "cors";
 import {db , DBconnection}  from "./config/database.js";
-import authRoutes  from "./routes/auth.routes.js";
-import pharmacyRoutes from "./routes/pharmacy.routes.js";
-import ordersRoutes from "./routes/order.routes.js"
-//------------------------------------------------------------------
-import user_router from "./routes/users/userHome.router.js"
-import pharmacy_home from "./routes/pharmacy/pharmicyHome.router.js"
-import user_profile from "./routes/users/userProfile.router.js"
-import pharmacy_mange from "./routes/pharmacy/pharmacyManage.router.js"
 
 
-DBconnection()
+import auth_router from "./middleware/auth/auth.router.js"
+import user_router from "./modules/user/user.router.js"
+import order_router from "./modules/order/order.router.js"
+import pharmacy_router from "./modules/pharmacy/pharmacy.router.js"
+
+
+
+await DBconnection()
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-app.get("/user", (req, res) => {
-  res.send("welcome to Graduation Project");
-});
-
-app.use("/", authRoutes);
-app.use("/", pharmacyRoutes);
-app.use("/", ordersRoutes);
+///////////////////////////////////////////
+app.use("/auth" , auth_router)
+app.use("/order" , order_router)
 app.use("/user" , user_router)
-app.use("/user/profile" , user_profile)
-app.use("/pharmicy/home" , pharmacy_home)
-app.use("/pharmicy/mange" , pharmacy_mange) 
+app.use ("/pharmcy" , pharmacy_router)
+//////////////////////////////////////////
 
 const PORT = process.env.PORT || 5000;
 
