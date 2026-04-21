@@ -320,18 +320,10 @@ export const del_medicine = (req, res) => {
     res.status(401).json({ msg: "Don't have access to user medicine" });
   }
 }
-
+/////////////////////////////////////////////////////////////////////
 export const home_getall_medicine =  (req, res) => {
   const query = `SELECT medicine.Name , medicine.Id as medicine_id , medicine.Manufacturer , medicine.Category , medicine.Description , pharmacymedicine.Price , pharmacymedicine.Quantity , pharmacy.Name as pharmacy_name , pharmacy.Location FROM medicine JOIN pharmacymedicine ON pharmacymedicine.MedicineId = medicine.Id JOIN pharmacy ON pharmacy.Id = pharmacymedicine.PharmacyId;`;
   const values = [];
-
-router.get("/home/medicine" , (req,res)=>{
-  const query=`SELECT medicine.Name , medicine.Id as medicine_id , medicine.Manufacturer , medicine.Category , medicine.Description , pharmacymedicine.Price , pharmacymedicine.Quantity , pharmacy.Name as pharmacy_name , pharmacy.Location FROM medicine JOIN pharmacymedicine ON pharmacymedicine.MedicineId = medicine.Id JOIN pharmacy ON pharmacy.Id = pharmacymedicine.PharmacyId; `
-  db.execute(query, values, (error, result) => {
-    if (error) return res.status(500).json({ msg: error.message });
-    res.status(200).json({ data: result });
-  });
-});
 
 
 
@@ -344,6 +336,7 @@ db.execute(query ,values , (error , result)=>{
 
 }
 
+///////////////////////////////////////////////////////
 export const home_search = (req, res) => {
   const { input } = req.query;
   
@@ -377,7 +370,7 @@ else{
 })
 }
 
-
+////////////////////////////////////////////////////////////////////
 export const add_commint = (req,res)=>{
 const {comm ,  pharmcy_id , user_id} = req.body 
 
