@@ -9,8 +9,7 @@ import order_router from "./modules/order/order.router.js"
 import pharmacy_router from "./modules/pharmacy/pharmacy.router.js"
 
 
-
-await DBconnection()
+ DBconnection()
 
 const app = express();
 
