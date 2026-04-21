@@ -3,14 +3,14 @@ import * as user from "./user.service.js"
 
 const router = Router();
 
-router.get("/get_profile", user.get_profile);
+router.post("/get_profile", user.get_profile);
 
 router.put("/update_profile", user.update_profile);
 
 
-router.get("/home/getall_medicine", user.home_getall_medicine)
+router.get("/home/getall_medicine", user.home_getall_medicine) //done 
 
-router.get("/home/search", user.home_search)
+router.get("/home/search", user.home_search) // done
 
 
 router.post("/add_commint" , user.add_commint)
